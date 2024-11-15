@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Microsoft.WindowsAPICodePack.Dialogs;
 
 namespace DEVE
@@ -17,9 +18,11 @@ namespace DEVE
         private string[] typeReplacementsColor = { "White", "Orange", "Yellow", "Red", "Pink", "Magenta", "Purple", "Blue", "Light Blue", "Cyan", "Lime", "Green", "Brown", "Light Gray", "Gray", "Black" };
         private string[] typeReplacementsWood = { "Oak", "Birch", "Spruce", "Dark Oak", "Jungle", "Acacia", "Mangrove", "Cherry", "Warped", "Crimson" };
         private string[] blockTargetsWood = { "Planks", "Stairs", "Slab", "Fence", "Fence Gate", "Door", "Trapdoor", "Button", "Pressure Plate", "Sign", "Hanging Sign", "Log", "Wood" };
+        
         public MainWindow()
         {
             InitializeComponent();
+            Icon = new BitmapImage(new Uri("pack://application:,,,/resources/icon.ico"));
         }
 
         private void generateFiles_Click(object sender, RoutedEventArgs e)
@@ -37,15 +40,7 @@ namespace DEVE
                         {    
                             fileContent = inputCommand.Text.Replace($"{typeReplacement.Text.ToLower().Replace(" ", "_")}_{blockTarget.Text.ToLower().Replace(" ", "_")}", $"{color.ToLower().Replace(" ", "_")}_{blockReplacement.Text.ToLower().Replace(" ", "_")}");
 
-                            if (inputLocation.Text == "Same as .exe-File")
-                            {
-                                File.WriteAllText($"{color.ToLower().Replace(" ", "_")}_{inputFilename.Text}.mcfunction", fileContent);
-                            }
-                            else
-                            {
-                                File.WriteAllText($@"{inputLocation.Text}\{color.ToLower().Replace(" ", "_")}_{inputFilename.Text}.mcfunction", fileContent);
-                            }
-                            
+                            generateMcFunction(fileContent, color);
                         }
                     }
                     else
@@ -65,25 +60,46 @@ namespace DEVE
                                     fileContent = inputCommand.Text.Replace($"{typeReplacement.Text.ToLower().Replace(" ", "_")}_{blockTarget.Text.ToLower().Replace(" ", "_")}", $"{wood.ToLower().Replace(" ", "_")}_{blockReplacement.Text.ToLower().Replace(" ", "_")}");
                                 }
                             }
+                            else
+                            {
+
+                            }
                         }
                     }
                     
                 }
                 else
                 {
-                    string err_fillOut = "One or more input fields are empty." +
+                    MessageBox.Show("One or more input fields are empty." +
                         "\n\nPlease input valid data for the followig fields and try again: " +
                         "\n- Command" +
                         "\n- Value Replacement" +
                         "\n- Block Target" +
-                        $"\n- Target Replacement";
-                    MessageBox.Show(err_fillOut, "Error");
+                        $"\n- Target Replacement", "Error");
                 }
             }
             else
             {
-                string err_fillOut = "Must select a Block Type.\n\nPlease select any Block Type from the dropdown menu.";
-                MessageBox.Show(err_fillOut, "Error");
+                MessageBox.Show("Must select a Block Type.\n\nPlease select any Block Type from the dropdown menu.", "Error");
+            }
+        }
+
+        private void generateMcFunction(string fileContent, string replaceType)
+        {
+            if (inputLocation.Text == "Same as .exe-File")
+            {
+                File.WriteAllText($"{replaceType.ToLower().Replace(" ", "_")}_{inputFilename.Text}.mcfunction", fileContent);
+            }
+            else
+            {
+                if (Directory.Exists(inputLocation.Text))
+                {
+                    File.WriteAllText($@"{inputLocation.Text}\{replaceType.ToLower().Replace(" ", "_")}_{inputFilename.Text}.mcfunction", fileContent);
+                }
+                else
+                {
+                    MessageBox.Show($"Path not found.\n\nThe given file output directory does not exist. Cannot create the file '{replaceType.ToLower().Replace(" ", "_")}_{inputFilename.Text}.mcfunction'. Please choose a valid path and try again.", "Error");
+                }
             }
         }
 
